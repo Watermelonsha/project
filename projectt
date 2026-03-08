@@ -1,0 +1,264 @@
+import java.util.*;
+
+public class Main {
+
+    //тут все будет храниться                                                            кладовка
+    private static HashSet<String> catalog = new HashSet<>();
+    private static HashSet<String> completed = new HashSet<>();
+    private static HashMap<String, HashSet<String>> prereqs = new HashMap<>();
+
+    private static Scanner scanner = new Scanner(System.in);
+
+    public static void main(String[] args) {
+        //текст
+        addSampleData();
+
+        //цыклы
+        while (true) {
+            System.out.println("\n--- Course Planner ---");
+            System.out.print("> ");
+            System.out.println("\n=== PLS print HELP for instructions ===");
+
+            String input = scanner.nextLine();
+            String[] parts = input.split(" ");
+            String command = parts[0].toLowerCase();
+
+            if (command.equals("exit")) {
+                System.out.println("Goodbyee!");
+                break;
+            }
+
+            switch (command) {
+                case "help":
+                    printHelp();
+                    break;
+
+                case "catalog": //каталоог пиктер энд э вью, энд э пайнидллс ин майайс
+                    showCatalog();
+                    break;
+
+                case "my":
+                    showMyCourses();
+                    break;
+
+                case "add":
+                    if (parts.length < 2) {
+                        System.out.println("Usage: add COURSE_CODE");
+                        break;
+                    }
+                    addCourse(parts[1].toUpperCase());
+                    break;
+
+                case "done":
+                    if (parts.length < 2) {
+                        System.out.println("Usage: done COURSE_CODE");
+                        break;
+                    }
+                    markDone(parts[1].toUpperCase());
+                    break;
+
+                case "need":
+                    if (parts.length < 2) {
+                        System.out.println("Usage: need COURSE_CODE");
+                        break;
+                    }
+                    showPrereqs(parts[1].toUpperCase());
+                    break;
+
+                case "addpreq":
+                    if (parts.length < 3) {
+                        System.out.println("Usage: addpreq COURSE PREREQ");
+                        break;
+                    }
+                    addPrereq(parts[1].toUpperCase(), parts[2].toUpperCase());
+                    break;
+
+                case "check":
+                    if (parts.length < 2) {
+                        System.out.println("Usage: check COURSE_CODE");
+                        break;
+                    }
+                    checkCourse(parts[1].toUpperCase());
+                    break;
+
+                default:
+                    System.out.println("Unknown command. Type 'help'");
+            }
+        }
+
+        scanner.close();
+    }
+
+    private static void printHelp() { //хелпми
+        System.out.println("\n=== HELP ===");
+        System.out.println("catalog     - show all courses");
+        System.out.println("my          - show my completed courses");
+        System.out.println("add        - add new course to catalog");
+        System.out.println("done        - mark course as completed");
+        System.out.println("need        - show prerequisites for a course");
+        System.out.println("addpreq C P - add prerequisite P to course C");
+        System.out.println("check        - check if you can take this course");
+        System.out.println("exit        - quit");
+    }
+
+    private static void addSampleData() {
+        //предмты
+        String[] courses = {"CS101", "CS102", "MATH101", "MATH201", "ALGO201"};
+        for (String c : courses) {
+            catalog.add(c);
+        }
+
+        //фильтрчтобы все подходило
+        HashSet<String> temp = new HashSet<>();
+        temp.add("CS101");
+        temp.add("CS102");
+        prereqs.put("ALGO201", temp);
+
+        temp = new HashSet<>();
+        temp.add("MATH101");
+        prereqs.put("MATH201", temp);
+
+        //если все ок
+        completed.add("CS101");
+        completed.add("MATH101");
+    }
+
+    private static void showCatalog() {
+        System.out.println("\n=== Catalog ===");
+        if (catalog.isEmpty()) {
+            System.out.println("Catalog is empty");
+            return;
+        }
+
+        //тут ghcnj lkzndbpefkmyjuj dblf
+        ArrayList<String> list = new ArrayList<>(catalog);
+        Collections.sort(list);
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(i + ": " + list.get(i));
+        }
+    }
+
+    private static void showMyCourses() {
+        System.out.println("\n=== My Completed Courses ===");
+        if (completed.isEmpty()) {
+            System.out.println("No courses completed yet");
+            return;
+        }
+
+        ArrayList<String> list = new ArrayList<>(completed);
+        Collections.sort(list);
+
+        for (int i = 0; i < list.size(); i++) {
+            System.out.println(i + ": " + list.get(i));
+        }
+    }
+
+    private static void addCourse(String code) {
+        if (catalog.contains(code)) {
+            System.out.println("Course " + code + " already exists");
+        } else {
+            catalog.add(code);
+            System.out.println("Added: " + code);
+        }
+    }
+
+    private static void markDone(String code) {
+        if (!catalog.contains(code)) {
+            System.out.println("Error: course " + code + " not found in catalog");
+            return;
+        }
+
+        if (completed.contains(code)) {
+            System.out.println("Course " + code + " already marked as completed");
+        } else {
+            completed.add(code);
+            System.out.println("Great! " + code + " marked as completed");
+        }
+    }
+
+    private static void showPrereqs(String code) {
+        if (!catalog.contains(code)) {
+            System.out.println("Error: course " + code + " not found");
+            return;
+        }
+
+        HashSet<String> needs = prereqs.get(code);
+
+        if (needs == null || needs.isEmpty()) {
+            System.out.println(code + " has no prerequisites");
+        } else {
+            System.out.println("Prerequisites for " + code + ":");
+            for (String need : needs) {
+                System.out.println("  - " + need);
+            }
+        }
+    }
+
+    private static void addPrereq(String course, String prereq) {
+        //естьливсе курсы
+        if (!catalog.contains(course)) {
+            System.out.println("Error: course " + course + " not found");
+            return;
+        }
+
+        if (!catalog.contains(prereq)) {
+            System.out.println("Error: course " + prereq + " not found");
+            return;
+        }
+
+        //из прошлого списка берем и новыйделам
+        HashSet<String> needs = prereqs.get(course);
+        if (needs == null) {
+            needs = new HashSet<>();
+            prereqs.put(course, needs);
+        }
+
+        if (needs.contains(prereq)) {
+            System.out.println(prereq + " is already a prerequisite for " + course);
+        } else {
+            needs.add(prereq);
+            System.out.println("Added: " + course + " now requires " + prereq);
+        }
+    }
+
+    private static void checkCourse(String code) {
+        if (!catalog.contains(code)) {
+            System.out.println("Error: course " + code + " not found");
+            return;
+        }
+
+        //уж сдал
+        if (completed.contains(code)) {
+            System.out.println("You already completed " + code + "!");
+            return;
+        }
+
+        //условтия
+        HashSet<String> needs = prereqs.get(code);
+
+        //если нет
+        if (needs == null || needs.isEmpty()) {
+            System.out.println("YES! You can take " + code + " (no prerequisites)");
+            return;
+        }
+
+        //по каждому прохдит
+        boolean canTake = true;
+        ArrayList<String> missing = new ArrayList<>();
+
+        for (String need : needs) {
+            if (!completed.contains(need)) {
+                canTake = false;
+                missing.add(need);
+            }
+        }
+
+        if (canTake) {
+            System.out.println("YES! You can take " + code + " (all prerequisites done)");
+        } else {
+            System.out.println("NO, you cannot take " + code + " yet");
+            System.out.println("Missing: " + missing);
+        }
+    }
+}
